@@ -9,34 +9,68 @@ window.addEventListener("resize", (event) => {
     canvas.height = window.innerHeight;
 });
 
+const cameraMovementStep = 100;
+const cameraScaleStep = 2;
+const cameraAnimationLength = 5;
 const camera = {
     x: 0,
     y: 0,
     scale: 1,
-    getX: function(x) {
-        return (canvas.width / 2) + (x - this.x) * this.scale;
+    smoothX: 0,
+    smoothY: 0,
+    smoothScale: 1,
+    getX(x) {
+        return (canvas.width / 2) + (x - this.smoothX) * this.smoothScale;
     },
-    getY: function(y) {
-        return (canvas.height / 2) + (y - this.y) * this.scale;
+    getY(y) {
+        return (canvas.height / 2) + (y - this.smoothY) * this.smoothScale;
+    },
+    getScale() {
+        return this.smoothScale;
+    },
+    update() {
+        if (this.smoothX > this.x) {
+            this.smoothX -= Math.abs(this.x - this.smoothX) / cameraAnimationLength;
+        } else if (this.smoothX < this.x) {
+            this.smoothX += Math.abs(this.x - this.smoothX) / cameraAnimationLength;
+        }
+
+        if (this.smoothY > this.y) {
+            this.smoothY -= Math.abs(this.y - this.smoothY) / cameraAnimationLength;
+        } else if (this.smoothY < this.y) {
+            this.smoothY += Math.abs(this.y - this.smoothY) / cameraAnimationLength;
+        }
+
+        if (this.smoothScale > this.scale) {
+            this.smoothScale -= Math.abs(this.scale - this.smoothScale) / cameraAnimationLength;
+        } else if (this.smoothScale < this.scale) {
+            this.smoothScale += Math.abs(this.scale - this.smoothScale) / cameraAnimationLength;
+        }
     }
 };
-const cameraMovementStep = 100;
-const cameraScaleStep = 2;
 
 window.addEventListener("keydown", (event) => {
     const key = event.key;
     switch (key) {
         case "ArrowUp":
-            camera.y -= cameraMovementStep;
+            if (Math.abs(camera.y - camera.smoothY) < cameraMovementStep) {
+                camera.y -= cameraMovementStep;
+            }
             break;
         case "ArrowDown":
-            camera.y += cameraMovementStep;
+            if (Math.abs(camera.y - camera.smoothY) < cameraMovementStep) {
+                camera.y += cameraMovementStep;
+            }
             break;
         case "ArrowLeft":
-            camera.x -= cameraMovementStep;
+            if (Math.abs(camera.x - camera.smoothX) < cameraMovementStep) {
+                camera.x -= cameraMovementStep;
+            }
             break;
         case "ArrowRight":
-            camera.x += cameraMovementStep;
+            if (Math.abs(camera.x - camera.smoothX) < cameraMovementStep) {
+                camera.x += cameraMovementStep;
+            }
             break;
         case "+":
             camera.scale *= cameraScaleStep;
@@ -114,7 +148,7 @@ class Object {
 
     render() {
         ctx.beginPath();
-        ctx.arc(camera.getX(this.x), camera.getY(this.y), this.radius * camera.scale, 0, Math.PI * 2);
+        ctx.arc(camera.getX(this.x), camera.getY(this.y), this.radius * camera.getScale(), 0, Math.PI * 2);
         ctx.fillStyle = this.color;
         ctx.fill();
     }
@@ -145,6 +179,8 @@ let objects = [
 
 function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    camera.update();
 
     objects = objects.filter(object => object.isActive === true);
 
