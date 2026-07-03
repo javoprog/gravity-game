@@ -113,7 +113,9 @@ class Object {
 
                         this.mass += object.mass;
                         this.radius = Math.sqrt(this.mass / Math.PI);
+
                         object.isActive = false;
+                        inactiveObjects.push(object);
 
                         this.vx += vx;
                         this.vy += vy;
@@ -176,6 +178,8 @@ class Object {
     }
 }
 
+let inactiveObjects = [];
+
 let objects = [
     new Object(0, 0, 10000, "#00f"),
     new Object(200, 0, 500, "#f00", 0, 7),
@@ -189,6 +193,10 @@ function update() {
     objects = objects.filter(object => object.isActive === true);
 
     objects.forEach(object => {
+        object.renderTrajectory();
+    });
+
+    inactiveObjects.forEach(object => {
         object.renderTrajectory();
     });
 
