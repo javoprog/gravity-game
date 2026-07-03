@@ -73,10 +73,14 @@ window.addEventListener("keydown", (event) => {
             }
             break;
         case "+":
-            camera.scale *= cameraScaleStep;
+            if (Math.abs(camera.scale - camera.smoothScale) < cameraScaleStep) {
+                camera.scale *= cameraScaleStep;
+            }
             break;
         case "-":
-            camera.scale /= cameraScaleStep;
+            if (Math.abs(camera.scale - camera.smoothScale) < cameraScaleStep) {
+                camera.scale /= cameraScaleStep;
+            }
             break;
     }
 });
