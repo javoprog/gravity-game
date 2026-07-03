@@ -9,37 +9,55 @@ window.addEventListener("resize", (event) => {
     canvas.height = window.innerHeight;
 });
 
-const cameraMovementStep = 100;
+let keys = {
+    "ArrowUp": false,
+    "ArrowDown": false,
+    "ArrowLeft": false,
+    "ArrowRight": false
+};
+
+const cameraMovementStep = 10;
 const cameraScaleStep = 2;
-const cameraAnimationLength = 5;
+const cameraAnimationLength = 10;
 const camera = {
     x: 0,
     y: 0,
+    vx: 0,
+    vy: 0,
     scale: 1,
-    smoothX: 0,
-    smoothY: 0,
     smoothScale: 1,
     getX(x) {
-        return (canvas.width / 2) + (x - this.smoothX) * this.smoothScale;
+        return (canvas.width / 2) + (x - this.x) * this.smoothScale;
     },
     getY(y) {
-        return (canvas.height / 2) + (y - this.smoothY) * this.smoothScale;
+        return (canvas.height / 2) + (y - this.y) * this.smoothScale;
     },
     getScale() {
         return this.smoothScale;
     },
     update() {
-        if (this.smoothX > this.x) {
-            this.smoothX -= Math.abs(this.x - this.smoothX) / cameraAnimationLength;
-        } else if (this.smoothX < this.x) {
-            this.smoothX += Math.abs(this.x - this.smoothX) / cameraAnimationLength;
+        if (keys["ArrowUp"] !== keys["ArrowDown"]) {
+            if (keys["ArrowUp"]) {
+                this.vy = -cameraMovementStep;
+            } else if (keys["ArrowDown"]) {
+                this.vy = cameraMovementStep;
+            }
+        } else {
+            this.vy = 0;
         }
 
-        if (this.smoothY > this.y) {
-            this.smoothY -= Math.abs(this.y - this.smoothY) / cameraAnimationLength;
-        } else if (this.smoothY < this.y) {
-            this.smoothY += Math.abs(this.y - this.smoothY) / cameraAnimationLength;
+        if (keys["ArrowLeft"] !== keys["ArrowRight"]) {
+            if (keys["ArrowLeft"]) {
+                this.vx = -cameraMovementStep;
+            } else if (keys["ArrowRight"]) {
+                this.vx = cameraMovementStep;
+            }
+        } else {
+            this.vx = 0;
         }
+
+        this.x += this.vx;
+        this.y += this.vy;
 
         if (this.smoothScale > this.scale) {
             this.smoothScale -= Math.abs(this.scale - this.smoothScale) / cameraAnimationLength;
@@ -49,29 +67,12 @@ const camera = {
     }
 };
 
+window.addEventListener("keydown", (event) => keys[event.key] = true);
+window.addEventListener("keyup", (event) => keys[event.key] = false);
+
 window.addEventListener("keydown", (event) => {
     const key = event.key;
     switch (key) {
-        case "ArrowUp":
-            if (Math.abs(camera.y - camera.smoothY) < cameraMovementStep) {
-                camera.y -= cameraMovementStep;
-            }
-            break;
-        case "ArrowDown":
-            if (Math.abs(camera.y - camera.smoothY) < cameraMovementStep) {
-                camera.y += cameraMovementStep;
-            }
-            break;
-        case "ArrowLeft":
-            if (Math.abs(camera.x - camera.smoothX) < cameraMovementStep) {
-                camera.x -= cameraMovementStep;
-            }
-            break;
-        case "ArrowRight":
-            if (Math.abs(camera.x - camera.smoothX) < cameraMovementStep) {
-                camera.x += cameraMovementStep;
-            }
-            break;
         case "+":
             if (Math.abs(camera.scale - camera.smoothScale) < cameraScaleStep) {
                 camera.scale *= cameraScaleStep;
