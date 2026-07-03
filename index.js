@@ -46,3 +46,72 @@ window.addEventListener("keydown", (event) => {
             break;
     }
 });
+
+class Object {
+    constructor(x, y, mass, color, vx = 0, vy = 0) {
+        this.x = x;
+        this.y = y;
+        this.mass = mass;
+        this.radius = Math.sqrt(this.mass / Math.PI);
+        this.color = color
+        this.vx = vx;
+        this.vy = vy;
+    }
+
+    update() {
+        objects.forEach(object => {
+            if (object !== this) {
+                let dx = object.x - this.x;
+                let dy = object.y - this.y;
+
+                let distance = Math.max(Math.sqrt((dx * dx) + (dy * dy)), 1);
+
+                const g = 1;
+
+                let f = g * (this.mass * object.mass) / (distance * distance);
+
+                let fx = f * (dx / distance);
+                let fy = f * (dy / distance);
+
+                let vx = fx / this.mass;
+                let vy = fy / this.mass;
+
+                this.vx += vx;
+                this.vy += vy;
+            }
+        });
+
+        this.applyVelocity();
+    }
+
+    applyVelocity() {
+        this.x += this.vx;
+        this.y += this.vy;
+    }
+
+    render() {
+        ctx.beginPath();
+        ctx.arc(camera.getX(this.x), camera.getY(this.y), this.radius * camera.scale, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    }
+}
+
+let objects = [
+    new Object(0, 0, 1000, "blue"),
+    new Object(200, 0, 500, "red", 0, 2),
+];
+
+function update() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    objects.forEach(object => {
+        object.update();
+
+        object.render();
+    });
+
+    requestAnimationFrame(update);
+}
+
+update();
