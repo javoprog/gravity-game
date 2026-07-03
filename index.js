@@ -56,6 +56,7 @@ class Object {
         this.color = color
         this.vx = vx;
         this.vy = vy;
+        this.isActive = true;
     }
 
     update() {
@@ -65,6 +66,22 @@ class Object {
                 let dy = object.y - this.y;
 
                 let distance = Math.max(Math.sqrt((dx * dx) + (dy * dy)), 1);
+
+                if (this.radius + object.radius > distance) {
+                    if (this.mass >= object.mass) {
+                        let vx = ((this.mass * this.vx) + (object.mass * object.vx)) / (this.mass + object.mass);
+                        let vy = ((this.mass * this.vy) + (object.mass * object.vy)) / (this.mass + object.mass);
+
+                        this.mass += object.mass;
+                        this.radius = Math.sqrt(this.mass / Math.PI);
+                        object.isActive = false;
+
+                        this.vx += vx;
+                        this.vy += vy;
+                    }
+
+                    return;
+                }
 
                 const g = 1;
 
@@ -99,11 +116,13 @@ class Object {
 
 let objects = [
     new Object(0, 0, 1000, "blue"),
-    new Object(200, 0, 500, "red", 0, 2),
+    new Object(200, 0, 500, "red", -10),
 ];
 
 function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    objects = objects.filter(object => object.isActive === true);
 
     objects.forEach(object => {
         object.update();
