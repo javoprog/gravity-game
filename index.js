@@ -56,6 +56,7 @@ class Object {
         this.color = color
         this.vx = vx;
         this.vy = vy;
+        this.trajectory = [];
         this.isActive = true;
     }
 
@@ -98,6 +99,11 @@ class Object {
             }
         });
 
+        this.trajectory.push({
+            x: this.x,
+            y: this.y
+        });
+
         this.applyVelocity();
     }
 
@@ -112,17 +118,39 @@ class Object {
         ctx.fillStyle = this.color;
         ctx.fill();
     }
+
+    renderTrajectory() {
+        ctx.beginPath();
+
+        let isFirst = true;
+
+        this.trajectory.forEach(trajectoryPoint => {
+            if (isFirst === true) {
+                ctx.moveTo(camera.getX(trajectoryPoint.x), camera.getY(trajectoryPoint.y));
+            } else {
+                ctx.lineTo(camera.getX(trajectoryPoint.x), camera.getY(trajectoryPoint.y));
+            }
+
+            isFirst = false;
+        });
+        ctx.strokeStyle = "#333";
+        ctx.stroke();
+    }
 }
 
 let objects = [
-    new Object(0, 0, 1000, "blue"),
-    new Object(200, 0, 500, "red", -10),
+    new Object(0, 0, 10000, "#00f"),
+    new Object(200, 0, 500, "#f00", 0, 7),
 ];
 
 function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     objects = objects.filter(object => object.isActive === true);
+
+    objects.forEach(object => {
+        object.renderTrajectory();
+    });
 
     objects.forEach(object => {
         object.update();
